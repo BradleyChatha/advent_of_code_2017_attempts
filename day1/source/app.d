@@ -4,47 +4,47 @@ const INPUT = "23736999148234612466339528635467298545732686574853341217977818839
 
 void main()
 {
-	writeln(inverseCaptcha(INPUT));
-	writeln(inverseCaptchaHalfway(INPUT));
+    writeln(inverseCaptcha(INPUT));
+    writeln(inverseCaptchaHalfway(INPUT));
 }
 
 int inverseCaptcha(const(char)[] input)
 {
-	import std.conv : to;
+    import std.conv : to;
 
-	int sum = 0;
-	foreach(i; 0..input.length)
-	{
-		int firstLetter = i; // Mostly pointless, just here to complement "lastLetter"
-		int lastLetter  = (i == input.length - 1) ? 0 : i + 1; // Circular index
+    int sum = 0;
+    foreach(i; 0..input.length)
+    {
+        int firstLetter = i; // Mostly pointless, just here to complement "lastLetter"
+        int lastLetter  = (i == input.length - 1) ? 0 : i + 1; // Circular index
 
-		if(input[firstLetter] == input[lastLetter])
-			sum += [input[firstLetter]].to!int; // Have to convert a char to a string, otherwise you get the ASCII value of the char.
-	}
+        if(input[firstLetter] == input[lastLetter])
+            sum += [input[firstLetter]].to!int; // Have to convert a char to a string, otherwise you get the ASCII value of the char.
+    }
 
-	return sum;
+    return sum;
 }
 
 int inverseCaptchaHalfway(const(char)[] input)
 {
-	import std.conv : to;
+    import std.conv : to;
 
-	assert(input.length % 2 == 0, "Website says it will always be even.");
-	auto halfStep = input.length / 2;
-	auto sum = 0;
+    assert(input.length % 2 == 0, "Website says it will always be even.");
+    auto halfStep = input.length / 2;
+    auto sum = 0;
 
-	foreach(i; 0..input.length)
-	{
-		auto firstLetter = i;
-		auto lastLetter  = i + halfStep;
-		if(lastLetter >= input.length)
-			lastLetter -= input.length;
+    foreach(i; 0..input.length)
+    {
+        auto firstLetter = i;
+        auto lastLetter  = i + halfStep;
+        if(lastLetter >= input.length)
+            lastLetter -= input.length;
 
-		if(input[firstLetter] == input[lastLetter])
-			sum += [input[firstLetter]].to!int;
-	}
+        if(input[firstLetter] == input[lastLetter])
+            sum += [input[firstLetter]].to!int;
+    }
 
-	return sum;
+    return sum;
 }
 
 // To be honest... I could just condense them into a single function, where you can just specify something like inverseCaptchaHalfway's 'halfStep' variable

@@ -19,85 +19,85 @@ const INPUT = r"116	1259	1045	679	1334	157	277	1217	218	641	1089	136	247	1195	23
 
 void main()
 {
-	writeln(checksum(INPUT));
-	writeln(divisibleChecksum(INPUT));
+    writeln(checksum(INPUT));
+    writeln(divisibleChecksum(INPUT));
 }
 
 int checksum(const(char)[] input)
 {
-	import std.algorithm : splitter;
-	import std.array     : array;
+    import std.algorithm : splitter;
+    import std.array     : array;
 
-	auto total = 0;
-	foreach(line; input.splitter('\n').array)
-	{
-		auto min = int.max;
-		auto max = 0;
+    auto total = 0;
+    foreach(line; input.splitter('\n').array)
+    {
+        auto min = int.max;
+        auto max = 0;
 
-		foreach(numString; line.splitter('\t'))
-		{
-			import std.conv : to;
-			auto num = numString.to!int;
+        foreach(numString; line.splitter('\t'))
+        {
+            import std.conv : to;
+            auto num = numString.to!int;
 
-			if(num < min)
-				min = num;
+            if(num < min)
+                min = num;
 
-			if(num > max)
-				max = num;
-		}
+            if(num > max)
+                max = num;
+        }
 
-		total += (max - min);
-	}
+        total += (max - min);
+    }
 
-	return total;
+    return total;
 }
 
 int divisibleChecksum(const(char)[] input)
 {
-	import std.algorithm : splitter, map;
-	import std.ascii     : isWhite;
-	import std.array     : array;
-	import std.conv      : to;
+    import std.algorithm : splitter, map;
+    import std.ascii     : isWhite;
+    import std.array     : array;
+    import std.conv      : to;
 
-	int[][] numbers;
-	foreach(line; input.splitter("\n"))
-		numbers ~= [line.splitter!isWhite.map!(num => num.to!int).array];
+    int[][] numbers;
+    foreach(line; input.splitter("\n"))
+        numbers ~= [line.splitter!isWhite.map!(num => num.to!int).array];
 
-	auto total = 0;
-	foreach(numLine; numbers)
-	{
-		//writeln("ln:", numLine);
+    auto total = 0;
+    foreach(numLine; numbers)
+    {
+        //writeln("ln:", numLine);
 
-		bool goToNextLine = false;
-		foreach(firstIndex; 0..numLine.length)
-		{
-			if(goToNextLine)
-				break;
+        bool goToNextLine = false;
+        foreach(firstIndex; 0..numLine.length)
+        {
+            if(goToNextLine)
+                break;
 
-			foreach(secondIndex; firstIndex + 1..numLine.length)
-			{
-				//writeln("\tidx1:", firstIndex);
-				//writeln("\tidx2:", secondIndex);
-				auto firstNum = numLine[firstIndex];
-				auto secondNum = numLine[secondIndex];
-				//writeln("\tval1:", firstNum);
-				//writeln("\tval2:", secondNum);
+            foreach(secondIndex; firstIndex + 1..numLine.length)
+            {
+                //writeln("\tidx1:", firstIndex);
+                //writeln("\tidx2:", secondIndex);
+                auto firstNum = numLine[firstIndex];
+                auto secondNum = numLine[secondIndex];
+                //writeln("\tval1:", firstNum);
+                //writeln("\tval2:", secondNum);
 
-				if((firstNum % secondNum) == 0)
-				{
-					total += (firstNum / secondNum);
-					goToNextLine = true;
-					break;
-				}
-				else if((secondNum % firstNum) == 0)
-				{
-					total += (secondNum / firstNum);
-					goToNextLine = true;
-					break;
-				}
-			}
-		}
-	}
+                if((firstNum % secondNum) == 0)
+                {
+                    total += (firstNum / secondNum);
+                    goToNextLine = true;
+                    break;
+                }
+                else if((secondNum % firstNum) == 0)
+                {
+                    total += (secondNum / firstNum);
+                    goToNextLine = true;
+                    break;
+                }
+            }
+        }
+    }
 
-	return total;
+    return total;
 }
