@@ -98,9 +98,9 @@ body
 
     // Then, we can see which range of numbers our desired number is in, and then get it's position from there.
     if(number > bottomLeftNumber) return Point(bottomLeftPoint.x + (number - bottomLeftNumber), bottomLeftPoint.y);
-    if(number > topLeftNumber)    return Point(topLeftPoint.x, 									topLeftPoint.y + (number - topLeftNumber));
-    if(number > topRighNumber)    return Point(topRightPoint.x - abs(number - topRighNumber), 	topRightPoint.y);
-    if(number < topRighNumber)    return Point(topRightPoint.x, 								topRightPoint.y + abs(number - topRighNumber));
+    if(number > topLeftNumber)    return Point(topLeftPoint.x,                                  topLeftPoint.y + (number - topLeftNumber));
+    if(number > topRighNumber)    return Point(topRightPoint.x - abs(number - topRighNumber),   topRightPoint.y);
+    if(number < topRighNumber)    return Point(topRightPoint.x,                                 topRightPoint.y + abs(number - topRighNumber));
 
     assert(false);
 }
