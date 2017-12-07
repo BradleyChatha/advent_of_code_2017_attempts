@@ -1289,7 +1289,7 @@ class Program
 
             auto buffer = format("%s%s\n", tabs, this);
             foreach(child; this.children)
-                buffer ~= child.toPrettyString(tabCount + 1);
+                buffer ~= child.toPrettyString(tabCount + 1, maxDepth);
 
             return buffer;
         }
@@ -1331,7 +1331,7 @@ unittest
 void main()
 {
     auto root = createTree(INPUT);
-    writeln("Part One(Max depth of 2):\n", root.toPrettyString(0, 1));
+    writeln("Part One(Max depth of 3):\n", root.toPrettyString(0, 3));
 }
 
 // Note: The returned 'program' is the very root of the tree and should not be used for anything
