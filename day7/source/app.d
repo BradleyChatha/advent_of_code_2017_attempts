@@ -1255,133 +1255,243 @@ ihhmv (72)";
 
 class Program
 {
-	public
-	{
-		string name;
-		Program[] children;
-		Program[] parents;
-		int weight;
+    public
+    {
+        string name;
+        Program[] children;
+        Program[] parents;
+        int weight;
 
-		this(string name, int weight)
-		{
-			this.name = name;
-			this.weight = weight;
-		}
+        this(string name, int weight)
+        {
+            this.name = name;
+            this.weight = weight;
+        }
 
-		override string toString()
-		{
-			import std.format;
+        override string toString()
+        {
+            import std.format;
 
-			return format("%s (%s) Children: %s | Parents: %s", this.name, this.weight, this.children.length, this.parents.length);
-		}
+            return format("%s (%s) Children: %s | Parents: %s", this.name, this.weight, this.children.length, this.parents.length);
+        }
 
-		string toPrettyString(int tabCount = 0)
-		{
-			import std.format;
-			import std.array : array;
+        string toPrettyString(int tabCount = 0, int maxDepth = int.max)
+        {
+            import std.format;
+            import std.array : array;
 
-			string tabs;
-			foreach(_; 0..tabCount)
-				tabs ~= '\t';
+            if(tabCount >= maxDepth)
+                return "";
 
-			auto buffer = format("%s%s\n", tabs, this);
-			foreach(child; this.children)
-				buffer ~= child.toPrettyString(tabCount + 1);
+            string tabs;
+            foreach(_; 0..tabCount)
+                tabs ~= '\t';
 
-			return buffer;
-		}
+            auto buffer = format("%s%s\n", tabs, this);
+            foreach(child; this.children)
+                buffer ~= child.toPrettyString(tabCount + 1);
 
-		// Returns: True if the program was added. False if the program is already a child.
-		bool addChild(Program program)
-		{
-			import std.algorithm : canFind;
+            return buffer;
+        }
 
-			assert(program !is null);
-			if(this.children.canFind!"a.name == b.name"(program))
-				return false;
+        // Returns: True if the program was added. False if the program is already a child.
+        bool addChild(Program program)
+        {
+            import std.algorithm : canFind;
 
-			this.children ~= program;
-			program.parents ~= this;
-			return true;
-		}
-	}
+            assert(program !is null);
+            if(this.children.canFind!"a.name == b.name"(program))
+                return false;
+
+            this.children ~= program;
+            program.parents ~= this;
+            return true;
+        }
+    }
 }
 
 const REGEX = `([a-z]+)\s\(([0-9]+)\)(?:\s->\s([a-z,\s]+))?`;
 // [1] = program name. [2] = weight. [3]? child programs, comma seperated.
 unittest
 {
-	import std.regex;
-	auto regex = ctRegex!REGEX;
-	auto result = "abcd (20) -> fgdg, nios".matchFirst(regex);
+    import std.regex;
+    auto regex = ctRegex!REGEX;
+    auto result = "abcd (20) -> fgdg, nios".matchFirst(regex);
 
-	assert(result[1] == "abcd");
-	assert(result[2] == "20");
-	assert(result[3] == "fgdg, nios");
+    assert(result[1] == "abcd");
+    assert(result[2] == "20");
+    assert(result[3] == "fgdg, nios");
 
-	result = "abcd (2)".matchFirst(regex);
-	assert(result[1] == "abcd");
-	assert(result[2] == "2");
-	assert(result[3] == "");
+    result = "abcd (2)".matchFirst(regex);
+    assert(result[1] == "abcd");
+    assert(result[2] == "2");
+    assert(result[3] == "");
 }
 
 void main()
 {
-	auto root = createTree(INPUT);
-	writeln(root.toPrettyString);
+    auto root = createTree(INPUT);
+    writeln("Part One(Max depth of 2):\n", root.toPrettyString(0, 1));
 }
 
 // Note: The returned 'program' is the very root of the tree and should not be used for anything
 Program createTree(string input)
 {
-	import std.algorithm : splitter, filter, each;
-	import std.regex;
-	import std.ascii : isWhite;
-	import std.conv : to;
+    import std.algorithm : splitter, filter, each;
+    import std.regex;
+    import std.ascii : isWhite;
+    import std.conv : to;
 
-	auto reg  = ctRegex!REGEX;
-	auto root = new Program("ROOT", int.max);
-	Program[string] knownPrograms;
+    auto reg  = ctRegex!REGEX;
+    auto root = new Program("ROOT", int.max);
+    Program[string] knownPrograms;
 
-	void createProgramIfNotExist(string name, int weight)
-	{
-		auto ptr = name in knownPrograms;
-		if(ptr is null)
-		{
-			writefln("\tCreating program: %s (%s)", name, weight);
-			knownPrograms[name] = new Program(name, weight);
-		}
-	}
-	
-	foreach(line; input.splitter('\n'))
-	{
-		auto regResult = line.matchFirst(reg);
-		auto name = regResult[1];
-		auto weight = regResult[2].to!int;
-		auto children = regResult[3];
+    void createProgramIfNotExist(string name, int weight)
+    {
+        auto ptr = name in knownPrograms;
+        if(ptr is null)
+        {
+            writefln("\tCreating program: %s (%s)", name, weight);
+            knownPrograms[name] = new Program(name, weight);
+        }
+    }
+    
+    foreach(line; input.splitter('\n'))
+    {
+        auto regResult = line.matchFirst(reg);
+        auto name = regResult[1];
+        auto weight = regResult[2].to!int;
+        auto children = regResult[3];
 
-		writefln("Parsing Program '%s'", name);
-		writeln("\tWeight: ", weight);
+        writefln("Parsing Program '%s'", name);
+        writeln("\tWeight: ", weight);
 
-		createProgramIfNotExist(name, weight);
-		auto program = knownPrograms[name];
-		program.weight = weight; // Fix up weight, in case they were added as a child (below)
+        createProgramIfNotExist(name, weight);
+        auto program = knownPrograms[name];
+        program.weight = weight; // Fix up weight, in case they were added as a child (below)
 
-		// If the program doesn't have any children, then 'children' will just be an empty string
-		// so this won't run at all.
-		foreach(child; children.splitter!(c => c.isWhite || c == ',').filter!(s => s.length > 0))
-		{
-			writefln("\tChild program called '%s' found", child);
+        // If the program doesn't have any children, then 'children' will just be an empty string
+        // so this won't run at all.
+        foreach(child; children.splitter!(c => c.isWhite || c == ',').filter!(s => s.length > 0))
+        {
+            writefln("\tChild program called '%s' found", child);
 
-			createProgramIfNotExist(child, int.max); // Weight will be corrected when the child is read in.
-			program.addChild(knownPrograms[child]);
-		}
-	}
+            createProgramIfNotExist(child, int.max); // Weight will be corrected when the child is read in.
+            program.addChild(knownPrograms[child]);
+        }
+    }
 
-	// Find all programs that have no parents, and add them as children to the root node (these are the so called 'bottom' programs)
-	knownPrograms.byValue
-				 .filter!(p => p.parents.length == 0)
-				 .each!(p => root.addChild(p));
+    // Find all programs that have no parents, and add them as children to the root node (these are the so called 'bottom' programs)
+    knownPrograms.byValue
+                 .filter!(p => p.parents.length == 0)
+                 .each!(p => root.addChild(p));
 
-	return root;
+    root.balanceTree();
+    return root;
+}
+
+void balanceTree(Program root)
+{
+    import std.format;
+    import std.algorithm : filter;
+    import std.container : RedBlackTree, redBlackTree;
+    import std.typecons  : Tuple;
+
+    assert(root.children.length == 1); // shhh
+    root = root.children[0];
+
+    int[Program] weightCache;
+    Program[] unbalancedPath;
+
+    int calculateTotalWeight(Program currentRoot)
+    {
+        if((currentRoot in weightCache) !is null)
+            return weightCache[currentRoot];
+
+        auto total = currentRoot.weight;
+
+        foreach(child; currentRoot.children)
+            total += calculateTotalWeight(child);
+
+        weightCache[currentRoot] = total;
+        return total;
+    }
+    calculateTotalWeight(root); // Cache the weight for every, single, node.
+
+    // Extra special debug info that totally doesn't clutter the entire screen up
+    version(none)
+    {
+        import std.algorithm;
+        import std.conv;
+        weightCache.byKeyValue.map!(kv => format("'%s': %s", kv.key, kv.value)).each!writeln;
+    }
+
+    Program findUnbalancedRoot(Program currentRoot)
+    {
+        writeln("Finding unbalanced root from current root: ", currentRoot);
+
+        int[int] numCount = [-1: 1]; // Dummy init
+        numCount.remove(-1);
+
+        // Count how many times each weight shows up.
+        foreach(child; currentRoot.children)
+        {
+            auto weight = calculateTotalWeight(child);
+
+            if((weight in numCount) is null)
+                numCount[weight] = 1;
+            else
+                numCount[weight] += 1;
+
+            writefln("\tWeight of child '%s' is %s", child, weight);
+        }
+        writeln("\tWeight countings: ", numCount);
+
+        assert(numCount.length <= 2, "Somethings wrong...");
+
+        // Dear christ what am I doing
+        alias NumCount = Tuple!(int, "value", int, "count");
+        alias PriorityQueue = RedBlackTree!(NumCount, "a.count < b.count");
+        auto queue = new PriorityQueue();
+        foreach(k, v; numCount)
+            queue.insert(NumCount(k, v));
+
+        auto incorrectWeight = queue.front;
+        writeln("\tIncorrect weight determined to be: ", incorrectWeight);
+        assert(incorrectWeight.count == 1 || numCount.length == 1);
+
+        if(numCount.length == 1)
+        {
+            writeln("\tIncorrect weight is the only weight, so this branch is determined balanced.");
+            return null;
+        }
+
+        auto unbalancedRoot = currentRoot.children.filter!(c => calculateTotalWeight(c) == incorrectWeight.value).front;        
+        return unbalancedRoot;
+    }
+
+    auto nextRoot = root;
+    while((nextRoot !is null) && nextRoot.children.length > 0)
+    {
+        nextRoot = findUnbalancedRoot(nextRoot);
+        
+        if(nextRoot !is null)
+            unbalancedPath ~= nextRoot;
+    }
+
+    auto lastUnbalanced = unbalancedPath[$-1];
+    assert(lastUnbalanced.parents.length > 0);
+
+    auto difference = 0;
+    foreach(child; lastUnbalanced.parents[0].children)
+    {
+        if(calculateTotalWeight(child) != calculateTotalWeight(lastUnbalanced))
+        {
+            import std.math : abs;
+            difference = abs(calculateTotalWeight(child) - calculateTotalWeight(lastUnbalanced));
+            break;
+        }
+    }
+
+    writeln("Part Two: ", lastUnbalanced.weight - difference);
 }
