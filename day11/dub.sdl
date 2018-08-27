@@ -1,0 +1,7 @@
+name "day11"
+description "A minimal D application."
+authors "Sealab"
+copyright "Copyright © 2018, Sealab"
+license "proprietary"
+
+targetPath "bin"
